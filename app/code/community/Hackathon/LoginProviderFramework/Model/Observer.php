@@ -4,22 +4,21 @@ class Hackathon_LoginProviderFramework_Model_Observer
 
     const CONFIG_PATH_LOGIN_PROVIDERS = 'hackathon/loginproviderframework/providers';
 
-    public function adminUserAuthenticateAfter($event)
+    public function adminhtmlControllerActionPredispatchStart($event)
     {
-        if ($event->getResult()) {
-            // user logged in, everything is fine
-            return;
-        }
+        $request = Mage::app()->getRequest();
+        $postLogin = $request->getPost('login');
 
-        $username = $event->getUsername();
-        $password = $event->getPassword();
-
-        $providers = Mage::getStoreConfig(self::CONFIG_PATH_LOGIN_PROVIDERS);
-        foreach ($providers as $provider) {
-            /* @var $provider Hackathon_LoginProviderFramework_Interface_LoginProviderInterface */
-            $provider = Mage::getModel($provider);
-            if ($provider->authenticate($username, $password)) {
-                $this->userAuthenticated($username, $role);
+        if (!is_null($postLogin)) {
+            $username = isset($postLogin['username']) ? $postLogin['username'] : '';
+            $password = isset($postLogin['password']) ? $postLogin['password'] : '';
+            $providers = Mage::getStoreConfig(self::CONFIG_PATH_LOGIN_PROVIDERS);
+            foreach ($providers as $provider) {
+                /* @var $provider Hackathon_LoginProviderFramework_Interface_LoginProviderInterface */
+                $provider = Mage::getModel($provider);
+                if ($provider->authenticate($username, $password)) {
+                    $this->userAuthenticated($username, $provider->getRoleForUser($username));
+                }
             }
         }
     }
@@ -33,13 +32,27 @@ class Hackathon_LoginProviderFramework_Model_Observer
         $user = Mage::getModel('admin/user');
         $user->loadByUsername($username);
         if (!$user->getId()) {
+            $name = uniqid();
             $user->setUsername($username);
+            $user->setFirstname($name);
+            $user->setLastname($name);
             $user->setPassword('');
-            $user->setEmail('');
+            $user->setEmail($name . '@domain.invalid');
             $user->setIsActive(true);
 
+            $role = Mage::getModel('admin/role')->load($role, 'role_name');
+            if (!$role->getId()) {
+                Mage::throwException('Role not found.');
+            }
+
             $user->save();
+
+            $user->setRoleIds(array($role->getId()))
+                ->setRoleUserId($user->getUserId())
+                ->saveRelations();
+
         }
         $session->setUser($user);
+        $session->setAcl(Mage::getResourceModel('admin/acl')->loadAcl());
     }
 }

@@ -11,7 +11,7 @@ class Hackathon_LoginProviderFramework_Model_Sandbox_TestProvider
     }
 
     public function getRoleForUser($username) {
-        return 'Administrator';
+        return 'Administrators';
     }
 
 }
