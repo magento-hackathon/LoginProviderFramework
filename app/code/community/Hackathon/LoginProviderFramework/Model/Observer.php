@@ -28,6 +28,14 @@ class Hackathon_LoginProviderFramework_Model_Observer
 
     protected function userAuthenticated($username, $role)
     {
+        // TODO core/session is initialized in
+        // app/code/core/Mage/Core/Controller/Varien/Action.php:495
+        // this are 30 lines after the event we are observing (adminhtmlControllerActionPredispatchStart)
+        Mage::getSingleton(
+            'core/session',
+            array('name' => Mage_Adminhtml_Controller_Action::SESSION_NAMESPACE)
+        )->start();
+
         /* @var $session Mage_Admin_Model_Session */
         $session = Mage::getSingleton('admin/session');
         /* @var $user Mage_Admin_Model_User */
@@ -54,14 +62,18 @@ class Hackathon_LoginProviderFramework_Model_Observer
                 ->saveRelations();
 
         }
-        $session->renewSession();
+
+        // TODO copied from app/code/core/Mage/Admin/Model/User.php:339
+        // any better idea?
+        if ($user->getIsActive() != '1') {
+            Mage::throwException(Mage::helper('adminhtml')->__('This account is inactive.'));
+        }
+        if (!$user->hasAssigned2Role($user->getId())) {
+            Mage::throwException(Mage::helper('adminhtml')->__('Access denied.'));
+        }
+
         $session->setIsFirstPageAfterLogin(true);
         $session->setUser($user);
         $session->setAcl(Mage::getResourceModel('admin/acl')->loadAcl());
-
-        if (Mage::getSingleton('adminhtml/url')->useSecretKey()) {
-            Mage::getSingleton('adminhtml/url')->renewSecretUrls();
-        }
-
     }
 }
