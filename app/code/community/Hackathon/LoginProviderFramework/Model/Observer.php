@@ -4,10 +4,12 @@ class Hackathon_LoginProviderFramework_Model_Observer
 
     const CONFIG_PATH_LOGIN_PROVIDERS = 'hackathon/loginproviderframework/providers';
 
+    protected $request;
+
     public function adminhtmlControllerActionPredispatchStart($event)
     {
-        $request = Mage::app()->getRequest();
-        $postLogin = $request->getPost('login');
+        $this->request = Mage::app()->getRequest();
+        $postLogin = $this->request->getPost('login');
 
         if (!is_null($postLogin)) {
             $username = isset($postLogin['username']) ? $postLogin['username'] : '';
@@ -36,7 +38,7 @@ class Hackathon_LoginProviderFramework_Model_Observer
             $user->setUsername($username);
             $user->setFirstname($name);
             $user->setLastname($name);
-            $user->setPassword('');
+            $user->setPassword('test');
             $user->setEmail($name . '@domain.invalid');
             $user->setIsActive(true);
 
@@ -52,7 +54,14 @@ class Hackathon_LoginProviderFramework_Model_Observer
                 ->saveRelations();
 
         }
+        $session->renewSession();
+        $session->setIsFirstPageAfterLogin(true);
         $session->setUser($user);
         $session->setAcl(Mage::getResourceModel('admin/acl')->loadAcl());
+
+        if (Mage::getSingleton('adminhtml/url')->useSecretKey()) {
+            Mage::getSingleton('adminhtml/url')->renewSecretUrls();
+        }
+
     }
 }
