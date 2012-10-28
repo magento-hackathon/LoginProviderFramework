@@ -19,15 +19,15 @@
     </global>
     <global>
         <events>
-            <adminhtml_controller_action_predispatch_start>
+            <controller_action_predispatch>
                 <observers>
                     <hackathon_loginproviderframework>
                         <type>singleton</type>
                         <class>Hackathon_LoginProviderFramework_Model_Observer</class>
-                        <method>adminhtmlControllerActionPredispatchStart</method>
+                        <method>controllerActionPredispatch</method>
                     </hackathon_loginproviderframework>
                 </observers>
-            </adminhtml_controller_action_predispatch_start>
+            </controller_action_predispatch>
         </events>
     </global>
     <default>

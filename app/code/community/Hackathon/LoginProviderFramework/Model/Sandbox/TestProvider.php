@@ -4,13 +4,20 @@ class Hackathon_LoginProviderFramework_Model_Sandbox_TestProvider
 {
     public function authenticate($username, $password)
     {
-        if($username == 'sandbox' && $password == 'test') {
-            return true;
+        if ($username == 'sandbox' && $password == 'test') {
+            /* @var $userInfos Hackathon_LoginProviderFramework_Model_SimpleUserInformation */
+            $userInfos = Mage::getModel('hackathon_loginproviderframework/simpleUserInformation');
+            $userInfos
+                ->setFirstname('firstname')
+                ->setLastname('lastname')
+                ->setEmailaddress('address@example.com')
+                ->setUsername('sandbox');
         }
-        return false;
+        return null;
     }
 
-    public function getRoleForUser($username) {
+    public function getRoleForUser($username)
+    {
         return 'Administrators';
     }
 

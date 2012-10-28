@@ -4,53 +4,38 @@ class Hackathon_LoginProviderFramework_Model_Observer
 
     const CONFIG_PATH_LOGIN_PROVIDERS = 'hackathon/loginproviderframework/providers';
 
-    protected $request;
-
-    public function adminhtmlControllerActionPredispatchStart($event)
+    public function controllerActionPredispatch($event)
     {
-        $this->request = Mage::app()->getRequest();
-        $postLogin = $this->request->getPost('login');
+        $request = Mage::app()->getRequest();
 
-        if (!is_null($postLogin)) {
-            $username = isset($postLogin['username']) ? $postLogin['username'] : '';
-            $password = isset($postLogin['password']) ? $postLogin['password'] : '';
-            $providers = Mage::getStoreConfig(self::CONFIG_PATH_LOGIN_PROVIDERS);
-            foreach ($providers as $provider) {
-                /* @var $provider Hackathon_LoginProviderFramework_Interface_LoginProviderInterface */
-                $provider = Mage::getModel($provider);
-                if ($provider->authenticate($username, $password)) {
-                    $this->userAuthenticated($username, $provider->getRoleForUser($username));
-                }
+        $providers = Mage::getStoreConfig(self::CONFIG_PATH_LOGIN_PROVIDERS);
+        foreach ($providers as $provider) {
+            /* @var $provider Hackathon_LoginProviderFramework_Interface_LoginProviderInterface */
+            $provider = Mage::getModel($provider);
+            if ($userInformations = $provider->authenticate($request)) {
+                $this->userAuthenticated($userInformations);
             }
         }
     }
 
 
-    protected function userAuthenticated($username, $role)
-    {
-        // TODO core/session is initialized in
-        // app/code/core/Mage/Core/Controller/Varien/Action.php:495
-        // this are 30 lines after the event we are observing (adminhtmlControllerActionPredispatchStart)
-        Mage::getSingleton(
-            'core/session',
-            array('name' => Mage_Adminhtml_Controller_Action::SESSION_NAMESPACE)
-        )->start();
-
+    protected function userAuthenticated(
+        Hackathon_LoginProviderFramework_Interface_UserInformationInterface $userInformations
+    ) {
         /* @var $session Mage_Admin_Model_Session */
         $session = Mage::getSingleton('admin/session');
         /* @var $user Mage_Admin_Model_User */
         $user = Mage::getModel('admin/user');
-        $user->loadByUsername($username);
+        $user->loadByUsername($userInformations->getUsername());
         if (!$user->getId()) {
-            $name = uniqid();
-            $user->setUsername($username);
-            $user->setFirstname($name);
-            $user->setLastname($name);
-            $user->setPassword('test');
-            $user->setEmail($name . '@domain.invalid');
+            $user->setUsername($userInformations->getUsername());
+            $user->setFirstname($userInformations->getFirstName());
+            $user->setLastname($userInformations->getLastName());
+            $user->setPassword($userInformations->getPassword());
+            $user->setEmail($userInformations->getEmailAddress());
             $user->setIsActive(true);
 
-            $role = Mage::getModel('admin/role')->load($role, 'role_name');
+            $role = Mage::getModel('admin/role')->load($userInformations->getRolename(), 'role_name');
             if (!$role->getId()) {
                 Mage::throwException('Role not found.');
             }
@@ -60,7 +45,6 @@ class Hackathon_LoginProviderFramework_Model_Observer
             $user->setRoleIds(array($role->getId()))
                 ->setRoleUserId($user->getUserId())
                 ->saveRelations();
-
         }
 
         // TODO copied from app/code/core/Mage/Admin/Model/User.php:339

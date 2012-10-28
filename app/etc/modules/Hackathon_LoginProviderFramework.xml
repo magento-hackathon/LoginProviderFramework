@@ -4,6 +4,10 @@
         <Hackathon_LoginProviderFramework>
             <active>true</active>
             <codePool>community</codePool>
+            <depends>
+                <Mage_Adminhtml />
+                <Mage_Adminhtml />
+            </depends>
         </Hackathon_LoginProviderFramework>
     </modules>
 </config>
