@@ -6,7 +6,7 @@
             <codePool>community</codePool>
             <depends>
                 <Mage_Adminhtml />
-                <Mage_Adminhtml />
+                <Mage_Admin />
             </depends>
         </Hackathon_LoginProviderFramework>
     </modules>
