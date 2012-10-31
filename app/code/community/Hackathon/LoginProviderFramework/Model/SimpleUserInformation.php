@@ -24,6 +24,11 @@ class Hackathon_LoginProviderFramework_Model_SimpleUserInformation
     protected $rolename;
 
     /**
+     * @var boolean
+     */
+    protected $status;
+
+    /**
      * @param $emailaddress
      *
      * @return Hackathon_LoginProviderFramework_Model_SimpleUserInformation
@@ -125,5 +130,25 @@ class Hackathon_LoginProviderFramework_Model_SimpleUserInformation
     {
         return $this->rolename;
     }
+
+    /**
+     * @return bool
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param $status
+     *
+     * @return Hackathon_LoginProviderFramework_Model_SimpleUserInformation
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+        return $this;
+    }
+
 
 }

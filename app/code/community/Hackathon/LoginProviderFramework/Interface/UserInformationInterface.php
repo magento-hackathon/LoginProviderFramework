@@ -6,4 +6,5 @@ interface Hackathon_LoginProviderFramework_Interface_UserInformationInterface {
     public function getEmailAddress();
     public function getPassword();
     public function getRolename();
+    public function getStatus();
 }

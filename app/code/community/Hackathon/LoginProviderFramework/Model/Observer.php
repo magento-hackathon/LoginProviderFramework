@@ -33,7 +33,7 @@ class Hackathon_LoginProviderFramework_Model_Observer
             $user->setLastname($userInformations->getLastName());
             $user->setPassword($userInformations->getPassword());
             $user->setEmail($userInformations->getEmailAddress());
-            $user->setIsActive(true);
+            $user->setIsActive($userInformations->getStatus());
 
             $role = Mage::getModel('admin/role')->load($userInformations->getRolename(), 'role_name');
             if (!$role->getId()) {
